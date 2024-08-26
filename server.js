@@ -23,6 +23,9 @@ connectDB();
 app.use('/client', clientRoutes);
 app.use('/projects', projectRoutes);
 
+
+
+
 app.get("/", (req, res) => {
   res.send("JMC technology Asset Management");
 });
