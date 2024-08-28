@@ -1,24 +1,24 @@
-const { client } = require('../config/database');
-const ObjectId = require('mongodb').ObjectId;
+const { ObjectId } = require('mongodb');
+const { getCollection } = require('../config/database');
+
+const projectCollection = getCollection('projects', 'project');
+const projectCollection2 = getCollection('project2', 'project');
 
 const getProjects = async (req, res) => {
-  try {
-    const projectCollection = client.db("projects").collection("project");
-    const projects = await projectCollection.find().toArray();
-    res.json(projects);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  const result = await projectCollection.find().toArray();
+  res.send(result);
+};
+
+const getProjectById = async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
+  const result = await projectCollection.findOne(query);
+  res.send(result);
 };
 
 const getProjects2 = async (req, res) => {
-  try {
-    const projectCollection2 = client.db("project2").collection("project");
-    const projects = await projectCollection2.find().toArray();
-    res.json(projects);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  const result = await projectCollection2.find().toArray();
+  res.send(result);
 };
 
-module.exports = { getProjects, getProjects2 };
+module.exports = { getProjects, getProjectById, getProjects2 };

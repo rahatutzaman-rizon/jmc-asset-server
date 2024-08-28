@@ -1,14 +1,10 @@
-const { client } = require('../config/database');
-const ObjectId = require('mongodb').ObjectId;
+const { getCollection } = require('../config/database');
+
+const clientCollection = getCollection('client', 'person');
 
 const getClients = async (req, res) => {
-  try {
-    const clientCollection = client.db("client").collection("person");
-    const clients = await clientCollection.find().toArray();
-    res.json(clients);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  const result = await clientCollection.find().toArray();
+  res.send(result);
 };
 
 module.exports = { getClients };

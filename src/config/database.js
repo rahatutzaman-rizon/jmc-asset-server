@@ -19,4 +19,8 @@ async function connectDB() {
   }
 }
 
-module.exports = { client, connectDB };
+const getCollection = (dbName, collectionName) => {
+  return client.db(dbName).collection(collectionName);
+};
+
+module.exports = { connectDB, getCollection };
