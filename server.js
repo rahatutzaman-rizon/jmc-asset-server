@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const { connectDB } = require('./src/config/database');
-
+const multer = require('multer');
+const { connectToDB } = require('./src/config/database');
 const projectRoutes = require('./src/routes/projectRoutes');
 const clientRoutes = require('./src/routes/clientRoutes');
 
@@ -11,17 +11,23 @@ const port = process.env.PORT || 5000;
 app.use(express.json());
 app.use(cors());
 
-// Connect to MongoDB
-connectDB();
+const upload = multer({ storage: multer.memoryStorage() });
 
-// Use routes
-app.use('/', projectRoutes);
-app.use('/', clientRoutes);
+app.use('/projects', upload.array('images', 5), projectRoutes);
 
 app.get("/", (req, res) => {
-  res.send("Job Task Planner server");
+  res.send("Job Task Planner server is running");
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+
+app.use('/', clientRoutes);
+
+connectToDB()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`Server running on port ${port}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Failed to connect to MongoDB", error);
+  });

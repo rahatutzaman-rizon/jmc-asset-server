@@ -1,24 +1,96 @@
+const { getDb } = require('../config/database');
 const { ObjectId } = require('mongodb');
-const { getCollection } = require('../config/database');
+const { uploadToImageBB } = require('../utils/imageUpload');
 
-const projectCollection = getCollection('projects', 'project');
-const projectCollection2 = getCollection('project2', 'project');
+async function getAllProjects(req, res) {
+  try {
+    const projectCollection = getDb().collection('project');
+    const result = await projectCollection.find().toArray();
+    res.send(result);
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    res.status(500).json({ message: "Error fetching projects", error: error.message });
+  }
+}
 
-const getProjects = async (req, res) => {
-  const result = await projectCollection.find().toArray();
-  res.send(result);
+async function getProjectById(req, res) {
+  try {
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) };
+    const projectCollection = getDb().collection('project');
+    const result = await projectCollection.findOne(query);
+    if (!result) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+    res.send(result);
+  } catch (error) {
+    console.error('Error fetching project:', error);
+    res.status(500).json({ message: "Error fetching project", error: error.message });
+  }
+}
+
+async function createProject(req, res) {
+  try {
+    const { status } = req.body;
+    const uploadPromises = req.files.map(file => uploadToImageBB(file.buffer));
+    const imageUrls = await Promise.all(uploadPromises);
+
+    const projectCollection = getDb().collection('project');
+    const result = await projectCollection.insertOne({
+      images: imageUrls,
+      status,
+    });
+
+    res.status(201).json({ 
+      message: "New project created", 
+      _id: result.insertedId, 
+      images: imageUrls, 
+      status 
+    });
+  } catch (error) {
+    console.error('Error creating project:', error);
+    res.status(400).json({ message: "Error creating project", error: error.message });
+  }
+}
+
+async function updateProject(req, res) {
+  try {
+    const id = req.params.id;
+    const projectCollection = getDb().collection('project');
+    const project = await projectCollection.findOne({ _id: new ObjectId(id) });
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    const uploadPromises = req.files.map(file => uploadToImageBB(file.buffer));
+    const newImageUrls = await Promise.all(uploadPromises);
+
+    const updatedImages = [...project.images, ...newImageUrls];
+
+    const result = await projectCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { images: updatedImages } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(400).json({ message: "Failed to update project" });
+    }
+
+    res.status(200).json({ 
+      message: "Project updated successfully", 
+      _id: id, 
+      addedImages: newImageUrls,
+      totalImages: updatedImages.length
+    });
+  } catch (error) {
+    console.error("Error updating project:", error);
+    res.status(500).json({ message: "Error updating project", error: error.message });
+  }
+}
+
+module.exports = {
+  getAllProjects,
+  getProjectById,
+  createProject,
+  updateProject
 };
-
-const getProjectById = async (req, res) => {
-  const id = req.params.id;
-  const query = { _id: new ObjectId(id) };
-  const result = await projectCollection.findOne(query);
-  res.send(result);
-};
-
-const getProjects2 = async (req, res) => {
-  const result = await projectCollection2.find().toArray();
-  res.send(result);
-};
-
-module.exports = { getProjects, getProjectById, getProjects2 };

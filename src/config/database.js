@@ -1,26 +1,33 @@
+
+
+
+
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
 const uri = "mongodb+srv://rizonrahat199:AheXI006z6v9OQzl@cluster0.yuht9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
-});
+let client;
 
-async function connectDB() {
+async function connectToDB() {
+  client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+  });
+
   try {
     await client.connect();
-    console.log('Connected to MongoDB');
-  } catch (err) {
-    console.error('Failed to connect to MongoDB', err);
+    console.log("Connected to MongoDB");
+  } catch (error) {
+    console.error("Error connecting to MongoDB:", error);
+    throw error;
   }
 }
 
-const getCollection = (dbName, collectionName) => {
-  return client.db(dbName).collection(collectionName);
-};
+function getDb() {
+  return client.db('projects');
+}
 
-module.exports = { connectDB, getCollection };
+module.exports = { connectToDB, getDb };
