@@ -1,10 +1,9 @@
-const { getDb } = require('../config/database');
 const { ObjectId } = require('mongodb');
-const { uploadToImageBB } = require('../utils/imageUpload');
+const uploadToImageBB = require('../utils/imageUpload');
 
-async function getAllProjects(req, res) {
+async function getProjects(req, res) {
   try {
-    const projectCollection = getDb().collection('project');
+    const projectCollection = req.app.locals.projectCollection;
     const result = await projectCollection.find().toArray();
     res.send(result);
   } catch (error) {
@@ -16,9 +15,8 @@ async function getAllProjects(req, res) {
 async function getProjectById(req, res) {
   try {
     const id = req.params.id;
-    const query = { _id: new ObjectId(id) };
-    const projectCollection = getDb().collection('project');
-    const result = await projectCollection.findOne(query);
+    const projectCollection = req.app.locals.projectCollection;
+    const result = await projectCollection.findOne({ _id: new ObjectId(id) });
     if (!result) {
       return res.status(404).json({ message: "Project not found" });
     }
@@ -32,10 +30,10 @@ async function getProjectById(req, res) {
 async function createProject(req, res) {
   try {
     const { status } = req.body;
+    const projectCollection = req.app.locals.projectCollection;
     const uploadPromises = req.files.map(file => uploadToImageBB(file.buffer));
     const imageUrls = await Promise.all(uploadPromises);
 
-    const projectCollection = getDb().collection('project');
     const result = await projectCollection.insertOne({
       images: imageUrls,
       status,
@@ -56,7 +54,7 @@ async function createProject(req, res) {
 async function updateProject(req, res) {
   try {
     const id = req.params.id;
-    const projectCollection = getDb().collection('project');
+    const projectCollection = req.app.locals.projectCollection;
     const project = await projectCollection.findOne({ _id: new ObjectId(id) });
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
@@ -88,9 +86,4 @@ async function updateProject(req, res) {
   }
 }
 
-module.exports = {
-  getAllProjects,
-  getProjectById,
-  createProject,
-  updateProject
-};
+module.exports = { getProjects, getProjectById, createProject, updateProject };

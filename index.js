@@ -43,15 +43,27 @@ async function uploadToImageBB(imageBuffer) {
 
 async function run() {
   try {
-    //  await client.connect();
+     await client.connect();
     console.log("Connected to MongoDB");
 
     const projectCollection = client.db("projects").collection("project");
-
+    const clientCollection=client.db("client").collection("person");
     // GET all projects
     app.get("/projects", async (req, res) => {
       try {
         const result = await projectCollection.find().toArray();
+        res.send(result);
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+        res.status(500).json({ message: "Error fetching projects", error: error.message });
+      }
+    });
+
+
+
+    app.get("/client", async (req, res) => {
+      try {
+        const result = await clientCollection.find().toArray();
         res.send(result);
       } catch (error) {
         console.error('Error fetching projects:', error);
@@ -141,7 +153,7 @@ async function run() {
   }
 }
 
-// run().catch(console.dir);
+run().catch(console.dir);
 
 app.get("/", (req, res) => {
   res.send("Job Task Planner server is running");

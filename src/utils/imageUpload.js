@@ -1,7 +1,7 @@
 const axios = require('axios');
 const FormData = require('form-data');
 
-const IMGBB_API_KEY = process.env.IMGBB_API_KEY || 'a6d456d255d1ba19fb79c3ba85d9871d';
+const IMGBB_API_KEY = 'a6d456d255d1ba19fb79c3ba85d9871d';
 
 async function uploadToImageBB(imageBuffer) {
   const form = new FormData();
@@ -18,4 +18,4 @@ async function uploadToImageBB(imageBuffer) {
   }
 }
 
-module.exports = { uploadToImageBB };
+module.exports = uploadToImageBB;
