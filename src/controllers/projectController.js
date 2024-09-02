@@ -86,4 +86,49 @@ async function updateProject(req, res) {
   }
 }
 
-module.exports = { getProjects, getProjectById, createProject, updateProject };
+
+
+//delete 
+async function deleteImageFromProject(req, res) {
+  try {
+    const { id } = req.params; // Project ID
+    const { image } = req.params; // Dynamic image URL to delete
+    const projectCollection = req.app.locals.projectCollection;
+
+    // Find the project by ID
+    const project = await projectCollection.findOne({ _id: new ObjectId(id) });
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    // Check if the image exists in the images array
+    if (!project.images.includes(image)) {
+      return res.status(404).json({ message: "Image not found in project" });
+    }
+
+    // Remove the specific image from the images array
+    const updatedImages = project.images.filter(url => url !== image);
+
+    // Update the project document with the new images array
+    const result = await projectCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { images: updatedImages } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(400).json({ message: "Failed to delete image from project" });
+    }
+
+    res.status(200).json({
+      message: "Image deleted successfully",
+      _id: id,
+      remainingImages: updatedImages.length
+    });
+  } catch (error) {
+    console.error("Error deleting image from project:", error);
+    res.status(500).json({ message: "Error deleting image from project", error: error.message });
+  }
+}
+
+
+module.exports = { getProjects, getProjectById, createProject, updateProject,deleteImageFromProject };
