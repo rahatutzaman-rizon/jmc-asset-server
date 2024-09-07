@@ -33,6 +33,49 @@ async function addClient(req, res) {
   }
 }
 
+
+
+
+async function updateClient(req, res) {
+  try {
+    const clientCollection = req.app.locals.clientCollection;
+    const { id } = req.params;
+    const { reviewText } = req.body;
+    const file = req.file;
+
+    let imageUrl = req.body.imageUrl;
+    if (file) {
+      imageUrl = await uploadToImageBB(file.buffer);
+    }
+
+    const updatedClient = { reviewText, imageUrl };
+    const result = await clientCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedClient });
+
+    if (result.modifiedCount === 1) {
+      res.status(200).json({ message: 'Client updated successfully' });
+    } else {
+      res.status(404).json({ message: 'Client not found' });
+    }
+  } catch (error) {
+    console.error('Error updating client:', error);
+    res.status(500).json({ message: 'Error updating client', error: error.message });
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 async function deleteClient(req, res) {
   try {
     const clientCollection = req.app.locals.clientCollection;
@@ -49,5 +92,5 @@ async function deleteClient(req, res) {
   }
 }
 
-module.exports = { getClients, addClient, deleteClient };
+module.exports = { getClients, addClient, deleteClient,updateClient};
 
