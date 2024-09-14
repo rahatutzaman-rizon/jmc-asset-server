@@ -6,6 +6,8 @@ const authRoutes = require('./src/routes/authRoutes'); // Import auth routes
 const bannerRoutes = require('./src/routes/bannerRoutes');
 const projectRoutes = require('./src/routes/projectRoutes');
 const clientRoutes = require('./src/routes/clientRoutes');
+const vedioRoutes= require('./src/routes/vedioRoutes');
+
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -21,17 +23,21 @@ async function initialize() {
     const clientCollection = client.db("client").collection("person");
     const bannerCollection = client.db("banner").collection("data");
     const userCollection = client.db("users").collection("users"); // Add user collection
+    const vedioCollection =client.db("vedio").collection("vedio");
 
+    
     app.locals.projectCollection = projectCollection;
     app.locals.clientCollection = clientCollection;
     app.locals.bannerCollection = bannerCollection;
     app.locals.userCollection = userCollection; // Add user collection to locals
-
+    app.locals.vedioCollection=vedioCollection;
     // Routes declaration
     app.use('/projects', projectRoutes);
     app.use('/client', clientRoutes);
     app.use('/banner', bannerRoutes);
-    app.use('/auth', authRoutes); // Add authentication routes
+    app.use('/auth', authRoutes);
+    app.use('/vedio',vedioRoutes)
+    // Add authentication routes
 
     app.get("/", (req, res) => {
       res.send("Job Task Planner server is running");
