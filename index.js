@@ -43,8 +43,8 @@ async function uploadToImageBB(imageBuffer) {
 
 async function run() {
   try {
-     await client.connect();
-    console.log("Connected to MongoDB");
+     
+   
 
     const projectCollection = client.db("projects").collection("project");
     const clientCollection=client.db("client").collection("person");
